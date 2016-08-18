@@ -1,4 +1,4 @@
-package org.kumosutra.service;
+package org.kumosutra.helicopter.service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
