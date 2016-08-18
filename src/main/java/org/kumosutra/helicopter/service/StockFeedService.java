@@ -1,5 +1,7 @@
 package org.kumosutra.helicopter.service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -9,8 +11,8 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.kumosutra.helicopter.conf.Endpoints;
 import org.kumosutra.helicopter.model.StockFeed;
 import org.kumosutra.helicopter.util.Logger;
@@ -30,9 +32,10 @@ public class StockFeedService {
 		
 		try {
 			Logger.log("Fetching " + Endpoints.LATEST_FEEDS);
-			JSONArray body = Unirest.get(Endpoints.LATEST_FEEDS).asJson().getBody().getObject().getJSONArray("stock");
+			JSONObject body = Unirest.get(Endpoints.LATEST_FEEDS).asJson().getBody().getObject();
+			Date thisDate = parseDate(body.getString("as_of"));
 			
-			return toFeeds(body.toString());
+			return toFeeds(body.getJSONArray("stock").toString(), thisDate);
 		} catch (UnirestException e) {
 			e.printStackTrace();
 		}
@@ -59,9 +62,9 @@ public class StockFeedService {
 				String url = String.format(Endpoints.BY_SYMBOL_AND_DATE, symbol.toLowerCase(), formatter.print(date));
 				
 				Logger.log("Fetching " + url);
-				String body = Unirest.get(url).asJson().getBody().getObject().getJSONArray("stock").toString();
+				JSONObject body = Unirest.get(url).asJson().getBody().getObject();
 				
-				feeds.addAll(toFeeds(body));
+				feeds.addAll(toFeeds(body.getJSONArray("stock").toString(), date.toDate()));
 			}
 			
 			return feeds;
@@ -74,8 +77,25 @@ public class StockFeedService {
 		return Collections.emptyList();
 	}
 	
-	private List<StockFeed> toFeeds(String stocksJson) {
-		return new Gson().fromJson(stocksJson, new TypeToken<ArrayList<StockFeed>>(){}.getType());
+	private List<StockFeed> toFeeds(String stocksJson, Date date) {
+		List<StockFeed> feeds = new Gson().fromJson(stocksJson, new TypeToken<ArrayList<StockFeed>>(){}.getType());
+		for (StockFeed stockFeed : feeds) {
+			stockFeed.setDate(date);
+		}
+		
+		return feeds;
 	}
 
+	private Date parseDate(String dateStr) {
+		try {
+			return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX").parse(dateStr);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	
 }

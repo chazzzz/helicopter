@@ -1,5 +1,7 @@
 package org.kumosutra.helicopter.model;
 
+import java.util.Date;
+
 public class StockFeed {
 
 	private String name;
@@ -11,7 +13,9 @@ public class StockFeed {
 	private float percentChange;
 	
 	private long volume;
-
+	
+	private Date date;
+	
 	public String getName() {
 		return name;
 	}
@@ -50,5 +54,13 @@ public class StockFeed {
 
 	public void setVolume(long volume) {
 		this.volume = volume;
+	}
+
+	public Date getDate() {
+		return date;
+	}
+
+	public void setDate(Date date) {
+		this.date = date;
 	}
 }
