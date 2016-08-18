@@ -1,5 +1,8 @@
 package org.kumosutra.service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
@@ -14,6 +17,17 @@ public class StockFeedServiceTest {
 		List<StockFeed> feeds = new StockFeedService().pull();
 		
 		Assert.assertFalse(feeds.isEmpty());
+	}
+	
+	@Test
+	public void testPullSpecificSymbolByDateRange() throws ParseException {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+		Date from = formatter.parse("2016-08-4");
+		Date to = formatter.parse("2016-08-9");
+		
+		List<StockFeed> feeds = new StockFeedService().pull("dfnn", from, to);
+		
+		Assert.assertEquals(4, feeds.size());
 	}
 
 }
