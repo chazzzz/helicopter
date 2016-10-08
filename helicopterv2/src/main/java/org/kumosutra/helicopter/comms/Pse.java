@@ -5,6 +5,8 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.kumosutra.helicopter.model.SecurityInfo;
@@ -29,10 +31,33 @@ public class Pse {
 
     private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyyMMdd");
 
-	private static final SimpleDateFormat PARSER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+	private static final DateTimeFormatter PARSER = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.S");
 
 	public static boolean isMarketDayToday() {
 		return false;
+	}
+
+	public static List<StockInfo> ticker() throws UnirestException {
+		String responseTxt = Unirest.get("http://www.pse.com.ph/stockMarket/home.html")
+				              .queryString("method", "getSecuritiesAndIndicesForPublic")
+				              .queryString("ajax", true)
+				              .queryString("_dc", new Date().getTime() + "").asString().getBody();
+
+		JSONArray stocksJson = new JSONArray(responseTxt);
+
+		List<StockInfo> stockInfos = new ArrayList<>();
+
+		for (int i = 1; i < stocksJson.length(); i++) {
+			JSONObject stockJson = stocksJson.getJSONObject(i);
+			StockInfo stockInfo = new StockInfo();
+			stockInfo.setClose(Float.parseFloat(stockJson.getString("lastTradedPrice").replaceAll(",", "")));
+			stockInfo.setSymbol(stockJson.getString("securitySymbol"));
+			stockInfo.setVolume(Float.parseFloat(stockJson.getString("totalVolume").replaceAll(",", "")));
+
+			stockInfos.add(stockInfo);
+		}
+
+		return stockInfos;
 	}
 
 	public static StockInfo data(int companyId, int symbolId) throws Exception {
@@ -51,7 +76,7 @@ public class Pse {
 		stockInfo.setClose(Float.parseFloat(json.getString("headerLastTradePrice").replaceAll(",", "")));
 		stockInfo.setVolume(Float.parseFloat(json.getString("headerTotalVolume").replaceAll(",", "")));
 		stockInfo.setSymbol(json.getString("securitySymbol"));
-		stockInfo.setDate(PARSER.parse(json.getString("lastTradedDate")));
+		stockInfo.setDate(PARSER.parseLocalDate(json.getString("lastTradedDate")).toDate());
 
 		return stockInfo;
 	}
@@ -68,7 +93,7 @@ public class Pse {
 
 			SecurityInfo securityInfo = new SecurityInfo();
 			securityInfo.setStatus(json.getString("securityStatus"));
-			securityInfo.setListingDate(PARSER.parse(json.getString("listingDate")));
+			securityInfo.setListingDate(PARSER.parseLocalDate(json.getString("listingDate")).toDate());
 			securityInfo.setType(json.getString("securityType"));
 			securityInfo.setSymbol(json.getString("securitySymbol"));
 			securityInfo.setName(json.getString("securityName"));

@@ -1,6 +1,8 @@
 package org.kumosutra.helicopter.repo;
 
 import com.mongodb.MongoClient;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.kumosutra.helicopter.model.Breakout;
 import org.kumosutra.helicopter.model.StockInfo;
 import org.mongodb.morphia.Datastore;
@@ -17,6 +19,8 @@ import java.util.List;
 public class Repo {
 
 	public static Datastore datastore;
+
+	public static DateTimeFormatter FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
 	public static Datastore init() {
 		Morphia morphia = new Morphia();

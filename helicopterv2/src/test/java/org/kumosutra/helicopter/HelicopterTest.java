@@ -6,10 +6,11 @@ import org.joda.time.Seconds;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.kumosutra.helicopter.comms.Pse;
 import org.kumosutra.helicopter.model.Breakout;
 import org.kumosutra.helicopter.model.Interests;
 import org.kumosutra.helicopter.model.StockInfo;
+import org.kumosutra.helicopter.repo.Repo;
+import org.kumosutra.helicopter.repo.Stocks;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -60,8 +61,9 @@ public class HelicopterTest {
 
 	@Test
 	public void quickies() throws DataFormatException, UnirestException, ParseException, IOException {
-		Pse.allData("TLJJ");
-
+		Repo.init();
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		System.out.println(Stocks.count("IRC", format.parse("2014-11-10 16:00:00")));
 	}
 
 	private float computeLine(List<StockInfo> data) {
